@@ -14,6 +14,7 @@ const [newYear, setNewYear] = useState(year);
 
 const deleteDialog = useRef();
 
+// Päivittää alkuperäisen hakutuloksen kentät päivitetyillä arvoilla.
 function updateFields(newArtist, newAlbum, newYear) {
   setNewArtist(newArtist)
   setNewAlbum(newAlbum)
@@ -35,7 +36,7 @@ async function deleteDbEntry(id) {
     <>  
     <table key={id}>
       <tbody>
-        <tr><td><b>{`#${index + 1}`}</b></td><td className="table-buttons"><Button type="button" text="Muokkaa" handleOnClick={() => setShow(true)}/><Button type="button" text="Poista" handleOnClick={() => deleteDialog.current.showModal()} /></td></tr>
+        <tr><td><b>{`#${index}`}</b></td><td className="table-buttons"><Button type="button" text="Muokkaa" handleOnClick={() => setShow(true)}/><Button type="button" text="Poista" handleOnClick={() => deleteDialog.current.showModal()} /></td></tr>
         <tr><td>Artisti:</td><td>{newArtist}</td></tr>
         <tr><td>Albumi:</td><td>{newAlbum}</td></tr>
         <tr><td>Julkaisuvuosi:</td><td>{newYear}</td></tr>
@@ -63,7 +64,7 @@ export function AllResultsTable(props) {
   if (albumData) {
 
   const allResults = albumData.map(({ _id, artist, albumName, releaseYear } = albumData, index) => 
-    <ResultTable index={index} id={_id} artist={artist} album={albumName} year={releaseYear}  refreshResults={refreshResults}/> 
+    <ResultTable index={index + 1} id={_id} artist={artist} album={albumName} year={releaseYear}  refreshResults={refreshResults}/> 
   )
     return (
       allResults 
@@ -78,7 +79,7 @@ export function AllResultsTable(props) {
     
     if (albumData) {
       return (
-        <ResultTable index="1" id={_id} artist={artist} album={albumName} year={releaseYear}  /> 
+        <ResultTable index={1} id={_id} artist={artist} album={albumName} year={releaseYear}  /> 
       )
     }
   }
