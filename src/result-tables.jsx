@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { Button } from "./common-button";
 import { Modal } from "./modal";
 
-
 // Palauttaa komponentin yksittäisille ja kaikille hakutuloksille. Hyödynnetään alempana. Lapsikomponenttina myös modaali albumitietojen muokkausta varten.
 function ResultTable (props) {    
 const { id, artist, album, year, refreshResults } = props;

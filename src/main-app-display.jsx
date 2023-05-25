@@ -3,9 +3,6 @@ import { AllResultsTable, SingleResultTable } from "./result-tables";
 import { Button } from "./common-button";
 import { Modal } from "./modal";
 
-
-
-
 // Palauttaa koko varsinaisen sovellusosan, sisältäen hakukentän, ja lapsikomponentteina hakutuloskentät, sekä modaalin albumin lisäämistä varten.
 export function MainAppDisplay() {
   const [newSearchInput, setNewSearchInput] = useState("");

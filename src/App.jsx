@@ -1,7 +1,5 @@
-import "./styles.css";
-import { MainAppDisplay } from "./search-and-results";
+import { MainAppDisplay } from "./main-app-display";
 import Header from "./header";
-
 
 export default function App(){
 
