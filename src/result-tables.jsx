@@ -1,24 +1,25 @@
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { Button } from "./common-button";
 import { Modal } from "./modal";
+import { GetAlbumsContext } from "./main-app-display";
 
 // Palauttaa komponentin yksittäisille ja kaikille hakutuloksille. Hyödynnetään alempana. Lapsikomponenttina myös modaali albumitietojen muokkausta varten.
-function ResultTable (props) {    
-const { id, artist, album, year, refreshResults } = props;
-const { index } = props;
+function ResultTable ({ id, artist, album, year, index }) {    
+  const getAllAlbums = useContext(GetAlbumsContext);
+  const deleteDialog = useRef();
+  
 const [show, setShow] = useState(false);
 
-const [newArtist, setNewArtist] = useState(artist);
-const [newAlbum, setNewAlbum] = useState(album);
-const [newYear, setNewYear] = useState(year);
+const [Artist, setArtist] = useState(artist);
+const [Album, setAlbum] = useState(album);
+const [Year, setYear] = useState(year);
 
-const deleteDialog = useRef();
 
-// Päivittää alkuperäisen hakutuloksen kentät päivitetyillä arvoilla.
+// Päivittää alkuperäisen hakutuloksen kentät modaalissa päivitetyillä arvoilla.
 function updateFields(newArtist, newAlbum, newYear) {
-  setNewArtist(newArtist)
-  setNewAlbum(newAlbum)
-  setNewYear(newYear)
+  setArtist(newArtist)
+  setAlbum(newAlbum)
+  setYear(newYear)
 }
 
 async function deleteDbEntry(id) {
@@ -28,7 +29,7 @@ async function deleteDbEntry(id) {
   deleteDialog.current.close()
 
     if (res) {
-      refreshResults()    // Tietueen poistamisen jälkeen päivittää hakutulokset, eli käytännössä tekee uuden API pyynnön kaikista tietueista.
+      getAllAlbums();    // Tietueen poistamisen jälkeen päivittää hakutulokset, eli tekee uuden API pyynnön kaikista tietueista.
   }
 }
 
@@ -37,9 +38,9 @@ async function deleteDbEntry(id) {
     <table key={id}>
       <tbody>
         <tr><td><b>{`#${index}`}</b></td><td className="table-buttons"><Button type="button" text="Muokkaa" handleOnClick={() => setShow(true)}/><Button type="button" text="Poista" handleOnClick={() => deleteDialog.current.showModal()} /></td></tr>
-        <tr><td>Artisti:</td><td>{newArtist}</td></tr>
-        <tr><td>Albumi:</td><td>{newAlbum}</td></tr>
-        <tr><td>Julkaisuvuosi:</td><td>{newYear}</td></tr>
+        <tr><td>Artisti:</td><td>{Artist}</td></tr>
+        <tr><td>Albumi:</td><td>{Album}</td></tr>
+        <tr><td>Julkaisuvuosi:</td><td>{Year}</td></tr>
         <tr><td>Id:</td><td>{id}</td></tr>
       </tbody>  
     </table>
@@ -52,37 +53,29 @@ async function deleteDbEntry(id) {
         </div>
       </div>
     </dialog>
-    <Modal show={show} title={"Muokkaa tietoja"} artist={newArtist} album={newAlbum} year={newYear} id={id} dbAction={"update"} onClick={() => setShow(false)} updateFields={updateFields}/>
+    <Modal show={show} title={"Muokkaa tietoja"} artist={Artist} album={Album} year={Year} id={id} dbAction={"update"} onClick={() => setShow(false)} updateFields={updateFields}/>
     </>
   )
 }
 
-// Taulukot kaikille hakutuloksille
-export function AllResultsTable(props) {
-  const { albumData, refreshResults } = props;
+// Taulukot hakutuloksille
+export function ResultsTable({ albumData }) {
 
-  if (albumData) {
-
-  const allResults = albumData.map(({ _id, artist, albumName, releaseYear } = albumData, index) => 
-    <ResultTable index={index + 1} id={_id} artist={artist} album={albumName} year={releaseYear}  refreshResults={refreshResults}/> 
-  )
-    return (
-      allResults 
+  if (albumData.length > 1) {
+    const allResults = albumData.map(({  _id, artist, albumName, releaseYear } = albumData, index) => 
+    <ResultTable index={index + 1} id={_id} artist={artist} album={albumName} year={releaseYear}/> 
+    )
+      return (
+        allResults 
+      )
+  } else if (albumData)  {
+      const { _id, artist, albumName, releaseYear} = albumData;
+      return (
+        <ResultTable index={1} id={_id} artist={artist} album={albumName} year={releaseYear}  /> 
     )
   }
 };
 
-// Taulukot yksittäiselle hakutulokselle
-  export function SingleResultTable(props) {
-    const { albumData } = props;
-    const { _id, artist, albumName, releaseYear} = albumData;
-    
-    if (albumData) {
-      return (
-        <ResultTable index={1} id={_id} artist={artist} album={albumName} year={releaseYear}  /> 
-      )
-    }
-  }
 
 
 

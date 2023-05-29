@@ -1,7 +1,7 @@
 import { useRef, useState } from "react"
 
 // Modaali, jonka kautta tapahtuu albumitietojen muokkaus ja uuden albumin lisääminen.
-export function Modal({ show, onClick, updateFields, artist, album, year, id, title, dbAction, refreshResults }) {
+export function Modal({ show, onClick, updateFields, artist, album, year, id, title, dbAction, getAllAlbums }) {
 
   const [newArtist, setNewArtist] = useState(artist)
   const [newAlbum, setNewAlbum] = useState(album)
@@ -12,11 +12,19 @@ export function Modal({ show, onClick, updateFields, artist, album, year, id, ti
   const albumFieldError = useRef()
   const yearFieldError = useRef()
 
-  const newData =
-  {
-    artist: newArtist,
-    albumName: newAlbum,
-    releaseYear: newYear
+
+// Palauttaa alkuperäiset arvot jos muokkaus/luonti peruutetaan.
+  function setDefauldValues() {
+    setNewArtist(artist);
+    setNewAlbum(album);
+    setNewYear(year);
+  }
+
+// Jos tietuetta muokataan, alkuperäisen hakutuloksen kentät muutetaan useStaten avulla, eikä tehdä sivua päivittävää API-kutsua.
+  function changeValue() {
+    if (dbAction === "update"){
+    updateFields(newArtist, newAlbum, newYear);  // Funktio tulee proppina 'results-tables'sta.
+    }
   }
 
   function cleanFieldErrors() {
@@ -29,10 +37,17 @@ export function Modal({ show, onClick, updateFields, artist, album, year, id, ti
   // Modaalin "Tallenna" nappia painaessa suorittaa joko päivityksen tai uuden tietueen luonnin, riippuen välittääkö modaalin lomake id-parametrin funktioon.
   async function updateOrCreateNew(id) {
 
+    const newData = {
+      artist: newArtist,
+      albumName: newAlbum,
+      releaseYear: newYear
+    }
+
     let inputError = false
 
     cleanFieldErrors();
-    
+ 
+
       if (!newArtist.length) {
         artistFieldError.current.innerHTML = "Artisti ei voi olla tyhjä!"
         inputError = true
@@ -43,12 +58,19 @@ export function Modal({ show, onClick, updateFields, artist, album, year, id, ti
         inputError = true
       }
 
-      if (!newYear.length | !Number.isInteger(parseInt(newYear))) {
-        yearFieldError.current.innerHTML = "Julkaisuvuosi ei voi olla tyhjä tai kirjaimia!" 
+      if (isNaN(newYear))  {
+        yearFieldError.current.innerHTML = "Julkaisuvuoden tulee koostua vain numeroista!" 
         inputError = true
       }
+
+      if (!newYear.length)  {
+        yearFieldError.current.innerHTML = "Julkaisuvuosi ei voi olla tyhjä!" 
+        inputError = true
+      }
+
+
       if (inputError === true) {
-        console.log(`error 2: ${inputError}`)
+        inputError = false
         return
       }
 
@@ -76,7 +98,6 @@ export function Modal({ show, onClick, updateFields, artist, album, year, id, ti
             confirmationText.current.innerHTML = `Virhe: ${res.status}! Muutoksia ei tallennettu!`
           }
 
-
       } else {
           const res = await fetch('https://ohtero-rest-api.onrender.com/api/add', {
             method: "POST",
@@ -87,7 +108,7 @@ export function Modal({ show, onClick, updateFields, artist, album, year, id, ti
             body: JSON.stringify(newData)
           })
           if (res.status === 200){
-            refreshResults();
+            getAllAlbums();
             setNewArtist("")
             setNewAlbum("")
             setNewYear("")
@@ -97,24 +118,10 @@ export function Modal({ show, onClick, updateFields, artist, album, year, id, ti
           } else {
             confirmationText.current.innerHTML = `Virhe: ${res.status}! Muutoksia ei tallennettu!`
           } 
-
       }
-   
   }
 
-  function setDefauldValues() {
-    setNewArtist(artist);
-    setNewAlbum(album);
-    setNewYear(year);
-  }
 
-  
-// Jos tietuetta muokataan, alkuperäisen hakutuloksen kentät muutetaan useStaten avulla, eikä tehdä sivua päivittävää API-kutsua.
-  function changeValue() {
-    if (dbAction === "update"){
-    updateFields(newArtist, newAlbum, newYear);
-    }
-  }
   
   if (show) {
     return (
